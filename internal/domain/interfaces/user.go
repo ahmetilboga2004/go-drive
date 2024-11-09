@@ -8,3 +8,9 @@ type IUserRepository interface {
 	GetByEmail(email string) (*models.User, error)
 	ChangePassword(userID uint, newPassword string) error
 }
+
+type IUserService interface {
+	Register(user *models.User) error
+	Login(usernameOrEmail, password string) (string, error)
+	GetByID(id uint) (*models.User, error)
+}
