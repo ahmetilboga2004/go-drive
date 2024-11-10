@@ -15,33 +15,53 @@ func NewUserRepository(db *gorm.DB) interfaces.IUserRepository {
 }
 
 func (r *userRepository) GetAll() ([]*models.User, error) {
-	return []*models.User{}, nil
+	var users []*models.User
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (r *userRepository) GetByID(id uint) (*models.User, error) {
-	return &models.User{}, nil
+	var user models.User
+	if err := r.db.First(&user, id).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (r *userRepository) GetByUsername(username string) (*models.User, error) {
-	return &models.User{}, nil
+	var user models.User
+	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (r *userRepository) GetByEmail(email string) (*models.User, error) {
-	return &models.User{}, nil
+	var user models.User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (r *userRepository) Create(user *models.User) error {
-	return nil
+	result := r.db.Create(user)
+	return result.Error
 }
 
-func (r *userRepository) Update(id uint, user *models.User) error {
-	return nil
+func (r *userRepository) Update(user *models.User) error {
+	result := r.db.Model(&user).Updates(&user)
+	return result.Error
 }
 
 func (r *userRepository) ChangePassword(id uint, newPassword string) error {
-	return nil
+	result := r.db.Model(&models.User{}).Where("id = ?", id).Update("password", newPassword)
+	return result.Error
 }
 
 func (r *userRepository) Delete(id uint) error {
-	return nil
+	result := r.db.Delete(&models.User{}, id)
+	return result.Error
 }

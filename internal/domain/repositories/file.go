@@ -26,7 +26,7 @@ func (r *fileRepository) Create(file *models.File) error {
 	return nil
 }
 
-func (r *fileRepository) Update(id uint, file *models.File) error {
+func (r *fileRepository) Update(file *models.File) error {
 	return nil
 }
 
