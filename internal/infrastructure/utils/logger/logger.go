@@ -1,30 +1,39 @@
 package logger
 
 import (
+	"fmt"
 	"os"
+	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 var Log *zap.Logger
 
-func InitializeLogger() {
-	_, err := os.OpenFile("logs/app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		panic("Error opening log file: " + err.Error())
+func init() {
+	if err := os.MkdirAll("logs", 0755); err != nil {
+		panic(fmt.Sprintf("failed to create logs directory: %v", err))
+	}
+	rotatingLogger := &lumberjack.Logger{
+		Filename:  fmt.Sprintf("logs/app-%s.log", time.Now().Format("2006-01-02")),
+		MaxSize:   10,
+		LocalTime: true,
 	}
 
-	config := zap.NewProductionConfig()
-	config.OutputPaths = []string{"stdout", "logs/app.log"}
-	config.ErrorOutputPaths = []string{"stderr"}
+	encodingConfig := zap.NewProductionEncoderConfig()
+	encodingConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
-	config.Level = zap.NewAtomicLevelAt(zap.InfoLevel)
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encodingConfig),
+		zapcore.NewMultiWriteSyncer(
+			zapcore.AddSync(os.Stdout),
+			zapcore.AddSync(rotatingLogger),
+		),
+		zap.InfoLevel,
+	)
 
-	var err2 error
-	Log, err2 = config.Build()
-	if err2 != nil {
-		panic("Error building zap logger: " + err2.Error())
-	}
-
+	Log = zap.New(core)
 	zap.ReplaceGlobals(Log)
 }
