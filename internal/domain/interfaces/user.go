@@ -11,6 +11,7 @@ type IUserRepository interface {
 
 type IUserService interface {
 	Register(user *models.User) error
-	Login(usernameOrEmail, password string) (string, error)
+	Login(usernameOrEmail, password string) (string, string, error)
+	RefreshToken(refreshToken string) (string, error)
 	GetByID(id uint) (*models.User, error)
 }

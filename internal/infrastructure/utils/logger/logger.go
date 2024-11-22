@@ -16,8 +16,11 @@ func init() {
 	if err := os.MkdirAll("logs", 0755); err != nil {
 		panic(fmt.Sprintf("failed to create logs directory: %v", err))
 	}
+
+	logFileName := fmt.Sprintf("logs/app-%s.log", time.Now().Format("2006-01-02"))
+
 	rotatingLogger := &lumberjack.Logger{
-		Filename:  fmt.Sprintf("logs/app-%s.log", time.Now().Format("2006-01-02")),
+		Filename:  logFileName,
 		MaxSize:   10,
 		LocalTime: true,
 	}

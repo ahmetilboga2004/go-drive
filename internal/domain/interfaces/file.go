@@ -1,6 +1,10 @@
 package interfaces
 
-import "github.com/ahmetilboga2004/internal/domain/models"
+import (
+	"mime/multipart"
+
+	"github.com/ahmetilboga2004/internal/domain/models"
+)
 
 type IFileRepository interface {
 	IBaseRepository[models.File]
@@ -11,7 +15,7 @@ type IFileRepository interface {
 type IFileService interface {
 	GetAll() ([]*models.File, error)
 	GetByID(id uint) (*models.File, error)
-	Create(file *models.File) error
+	Create(fileHeader *multipart.FileHeader, userId uint, isPublic bool) (*models.File, error)
 	Update(id uint, file *models.File) error
 	Delete(id uint) error
 }

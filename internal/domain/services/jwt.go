@@ -25,7 +25,7 @@ func NewJwtService(config *JwtConfig) interfaces.IJwtService {
 	}
 }
 
-func (s *jwtService) GenerateAccessToken(userId string, claims map[string]interface{}) (string, error) {
+func (s *jwtService) GenerateAccessToken(userId uint, claims map[string]any) (string, error) {
 	now := time.Now()
 	tokenClaims := jwt.MapClaims{
 		"user_id": userId,
@@ -41,7 +41,7 @@ func (s *jwtService) GenerateAccessToken(userId string, claims map[string]interf
 	return token.SignedString([]byte(s.config.AccessTokenSecret))
 }
 
-func (s *jwtService) GenerateRefreshToken(userId string) (string, error) {
+func (s *jwtService) GenerateRefreshToken(userId uint) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
 		"user_id": userId,
@@ -54,7 +54,7 @@ func (s *jwtService) GenerateRefreshToken(userId string) (string, error) {
 }
 
 func (s *jwtService) ValidateAccessToken(tokenString string) (*jwt.Token, error) {
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -63,7 +63,7 @@ func (s *jwtService) ValidateAccessToken(tokenString string) (*jwt.Token, error)
 }
 
 func (s *jwtService) ValidateRefreshToken(tokenString string) (*jwt.Token, error) {
-	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
 		}
@@ -71,7 +71,7 @@ func (s *jwtService) ValidateRefreshToken(tokenString string) (*jwt.Token, error
 	})
 }
 
-func (s *jwtService) GetTokenClaims(token *jwt.Token) (map[string]interface{}, error) {
+func (s *jwtService) GetTokenClaims(token *jwt.Token) (map[string]any, error) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		return claims, nil
 	}

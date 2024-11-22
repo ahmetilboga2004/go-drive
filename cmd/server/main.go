@@ -1,7 +1,45 @@
 package main
 
-import "github.com/ahmetilboga2004/internal/infrastructure/utils/logger"
+import (
+	"net/http"
+
+	"github.com/ahmetilboga2004/internal/application/handlers"
+	"github.com/ahmetilboga2004/internal/application/middlewares"
+	"github.com/ahmetilboga2004/internal/domain/repositories"
+	"github.com/ahmetilboga2004/internal/domain/services"
+	"github.com/ahmetilboga2004/internal/infrastructure/config"
+	"github.com/ahmetilboga2004/internal/infrastructure/config/database"
+	"github.com/ahmetilboga2004/internal/infrastructure/utils/logger"
+)
 
 func main() {
-	logger.Log.Info("Server started")
+	jwtConfig := services.JwtConfig{
+		AccessTokenSecret:  config.JWT.AccessSecretKey,
+		RefreshTokenSecret: config.JWT.RefreshSecretKey,
+		AccessTokenExp:     config.JWT.AccessTokenExpiration,
+		RefreshTokenExp:    config.JWT.RefreshTokenExpiration,
+	}
+	jwtService := services.NewJwtService(&jwtConfig)
+	userRepo := repositories.NewUserRepository(database.DB)
+	userService := services.NewUserService(userRepo, jwtService)
+	userHandler := handlers.NewUserHandler(userService)
+
+	fileRepo := repositories.NewFileRepository(database.DB)
+	fileService := services.NewFileService(fileRepo)
+	fileHandler := handlers.NewFileHandler(fileService)
+
+	authMiddleware := middlewares.NewAuthMiddleware(jwtService)
+
+	mux := http.NewServeMux()
+
+	authMux := authMiddleware.Auth(mux)
+
+	mux.HandleFunc("POST /users/register", authMiddleware.GuestOnly(userHandler.Register))
+	mux.HandleFunc("POST /users/login", authMiddleware.GuestOnly(userHandler.Login))
+	mux.HandleFunc("GET /users/refresh-token", userHandler.RefreshToken)
+
+	mux.HandleFunc("POST /files/upload", authMiddleware.RequireLogin(fileHandler.Upload))
+
+	logger.Log.Sugar().Infof("server started on %s", config.APP.BaseURL)
+	logger.Log.Sugar().Fatal(http.ListenAndServe(":"+config.APP.Port, authMux))
 }
