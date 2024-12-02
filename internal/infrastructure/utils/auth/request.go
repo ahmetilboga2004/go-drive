@@ -20,7 +20,7 @@ func GetUserIDFromContext(r *http.Request) (uint, error) {
 	}
 
 	if userIDStr, ok := rawUserID.(string); ok {
-		userID, err := strconv.ParseUint(userIDStr, 10, 32)
+		userID, err := strconv.ParseUint(userIDStr, 10, 64)
 		if err != nil {
 			return 0, err
 		}

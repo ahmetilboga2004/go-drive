@@ -9,9 +9,8 @@ type FileCreate struct {
 }
 
 type FileUpdate struct {
-	Name     string `json:"name,omitempty"`
-	FileType string `json:"file_type,omitempty"`
-	Public   bool   `json:"public"`
+	Name   string `json:"name,omitempty"`
+	Public bool   `json:"public"`
 }
 
 type FileBasicInfo struct {

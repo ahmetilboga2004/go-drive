@@ -38,7 +38,10 @@ func main() {
 	mux.HandleFunc("POST /users/login", authMiddleware.GuestOnly(userHandler.Login))
 	mux.HandleFunc("GET /users/refresh-token", userHandler.RefreshToken)
 
-	mux.HandleFunc("POST /files/upload", authMiddleware.RequireLogin(fileHandler.Upload))
+	mux.HandleFunc("GET /files/", fileHandler.GetAll)
+	mux.HandleFunc("GET /files/{id}", fileHandler.GetByID)
+	mux.HandleFunc("POST /files/", authMiddleware.RequireLogin(fileHandler.Upload))
+	mux.HandleFunc("PUT /files/{id}", fileHandler.Update)
 
 	logger.Log.Sugar().Infof("server started on %s", config.APP.BaseURL)
 	logger.Log.Sugar().Fatal(http.ListenAndServe(":"+config.APP.Port, authMux))
